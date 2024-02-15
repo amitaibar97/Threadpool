@@ -31,10 +31,9 @@ git clone https://github.com/amitaibar97/Threadpool.git
 
 ### Creating a ThreadPool
 
-```java
-// Default initialization using the number of available processor cores
+```// Default initialization using the number of available processor cores
 ThreadPool threadPool = new ThreadPool();
 
 // Custom initialization with a specific number of threads
-ThreadPool threadPool = new ThreadPool(10);
+ThreadPool threadPool = new ThreadPool(10);```
 
