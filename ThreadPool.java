@@ -1,7 +1,9 @@
 package thread_pool;
 
 
-import com.sun.istack.internal.NotNull;
+
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
