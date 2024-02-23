@@ -4,12 +4,19 @@
 This project implements a customizable thread pool in Java, designed to optimize task execution by reusing a fixed number of threads instead of creating a thread for each new created task. It allows for dynamic adjustment of the thread count and provides task prioritization and management through a semaphore-based waitable queue. The API supports various task submission options and offers mechanisms to pause, resume, and shut down the pool, ensuring graceful handling of tasks.
 
 ## Features
+### ThreadPool
 - **Dynamic Thread Allocation**: Initialize with a default number of threads (equal to the number of available processor cores) or specify a custom count.
 - **Task Submission with Priority**: Submit `Callable` or `Runnable` tasks with or without priority. Tasks are managed in a priority queue, with the next available thread picking up the highest-priority task.
 - **Future Object**: Each submitted task returns a `Future` object, allowing for task status tracking.
 - **Runtime Thread Adjustment**: Modify the number of active threads during execution. Adding threads increases the pool size, while reducing threads uses a poison pill technique to gracefully exit excess threads.
-- **Pause and Resume**: Temporarily halt task execution with a 'sleeping pill' technique, resuming when ready.
+- **Pause and Resume**: Temporarily halt tasks execution with a 'sleeping pill' technique(does not pause tasks in execution). resuming when ready.
 - **Graceful Shutdown**: Overloaded shutdown methods provide options with or without a timeout, ensuring all tasks are completed before termination.
+
+### Future (Returned Object)
+- **Task cancellation**: Remove a task from the queue or interrupt the running thread if applicable(optional).
+- **Check if task is cancelled**
+- **Check if a task has completed**
+- **Get the result value of a callable**: This method is blocking. Throws an exception if the task was canceled or encountered an exception. can be used with a specified timeout.
 
 ## Installation
 Clone the repository and include the `.java` files in your Java project:
@@ -44,8 +51,8 @@ ThreadPool threadPool = new ThreadPool(10);
 ```
 ### Submitting Tasks
 
-```// Submit a Runnable task without priority
-Future<?> future1 = threadPool.submit(new Runnable() {
+```// Submit a Runnable task with default priority
+Future<?> future = threadPool.submit(new Runnable() {
     @Override
     public void run() {
         // Task implementation
@@ -53,15 +60,15 @@ Future<?> future1 = threadPool.submit(new Runnable() {
 });
 
 // Submit a Runnable task with priority
-Future<?> future2 = threadPool.submit(new Runnable() {
+Future<?> future = threadPool.submit(new Runnable() {
     @Override
     public void run() {
         // Task implementation
     }
-}, priority); // Replace 'priority' with an integer value representing task priority
+}, priority); // Replace 'priority' with an enum(LOW/DEFAULT/HIGH) representing task priority
 
 // Submit a Callable task without priority
-Future<String> future3 = threadPool.submit(new Callable<String>() {
+Future<String> future = threadPool.submit(new Callable<String>() {
     @Override
     public String call() throws Exception {
         // Task implementation
@@ -70,13 +77,16 @@ Future<String> future3 = threadPool.submit(new Callable<String>() {
 });
 
 // Submit a Callable task with priority
-Future<String> future4 = threadPool.submit(new Callable<String>() {
+Future<String> future = threadPool.submit(new Callable<String>() {
     @Override
     public String call() throws Exception {
         // Task implementation
         return "Result";
     }
-}, priority); // Replace 'priority' with an integer value representing task priority
+}, priority); // Replace 'priority' with an enum(LOW/DEFAULT/HIGH) representing task priority
+
+// block the thread until the Callable task is done and get its value
+String returnVal = future.get();
 ```
 
 ### Modifying Thread Count
@@ -93,17 +103,18 @@ threadPool.pause();
 threadPool.resume();
 ```
 
-### Shutdown
-```// Graceful shutdown without timeout
+### Shutdown(non-blocking)
+```// Close the thread pool.
 threadPool.shutDown();
 
-// Graceful shutdown with timeout
-threadPool.shutDown(timeout); // Replace 'timeout' with the desired timeout value in milliseconds
 ```
 
 ### Awaiting Termination
-```// Wait for all tasks to complete and the thread pool to shut down
+```// Block the calling thread until all threads in the pool are closed.
 threadPool.awaitTermination();
+
+//termination with an optional timeout
+awaitTermination(timeout, timeUnit);
 ```
 
 ## Contributing
